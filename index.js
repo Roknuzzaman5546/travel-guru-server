@@ -28,9 +28,16 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
         const placecollection = client.db('traveldb').collection('place')
+        const userscollection = client.db('traveldb').collection('users')
 
         app.get('/place', async (req, res) => {
             const result = await placecollection.find().toArray();
+            res.send(result)
+        })
+
+        app.post('/users', async (req, res) => {
+            const userInfo = req.body;
+            const result = await userscollection.insertOne(userInfo)
             res.send(result)
         })
 
