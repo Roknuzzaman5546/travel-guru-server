@@ -29,6 +29,7 @@ async function run() {
         await client.connect();
         const placecollection = client.db('traveldb').collection('place')
         const userscollection = client.db('traveldb').collection('users')
+        const hotelscollection = client.db('traveldb').collection('hotel')
 
         app.get('/place', async (req, res) => {
             const result = await placecollection.find().toArray();
@@ -38,6 +39,11 @@ async function run() {
         app.post('/users', async (req, res) => {
             const userInfo = req.body;
             const result = await userscollection.insertOne(userInfo)
+            res.send(result)
+        })
+
+        app.get('/hotel', async (req, res) => {
+            const result = await hotelscollection.find().toArray();
             res.send(result)
         })
 
