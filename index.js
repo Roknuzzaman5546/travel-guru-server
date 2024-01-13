@@ -30,6 +30,7 @@ async function run() {
         const placecollection = client.db('traveldb').collection('place')
         const userscollection = client.db('traveldb').collection('users')
         const hotelscollection = client.db('traveldb').collection('hotel')
+        const destinationscollection = client.db('traveldb').collection('destination')
 
         app.get('/place', async (req, res) => {
             const result = await placecollection.find().toArray();
@@ -39,14 +40,24 @@ async function run() {
         app.post('/users', async (req, res) => {
             const userInfo = req.body;
             const result = await userscollection.insertOne(userInfo)
-            res.send(result)
+            res.send(result);
         })
 
         app.get('/hotel', async (req, res) => {
             const result = await hotelscollection.find().toArray();
+            res.send(result);
+        })
+
+        app.post('/destination', async (req, res) => {
+            const Destination = req.body;
+            const result = await destinationscollection.insertOne(Destination)
             res.send(result)
         })
 
+        app.get('/destination', async (req, res) => {
+            const result = await destinationscollection.find().toArray()
+            res.send(result)
+        })
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
