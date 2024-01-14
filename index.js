@@ -47,7 +47,7 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/  ', async (req, res) => {
+        app.get('/placebook', async (req, res) => {
             const email = req.query.email;
             const query = { email: email }
             const result = await placesbookcollection.find(query).toArray()
@@ -61,6 +61,13 @@ async function run() {
             const result = await userscollection.insertOne(userInfo)
             res.send(result);
         })
+
+        app.get('/users', async (req, res) => {
+            const result = await userscollection.find().toArray()
+            res.send(result)
+        })
+
+
 
         // Hotel related Api
 
@@ -82,7 +89,6 @@ async function run() {
             res.send(result)
         })
 
-
         // Destination related Api
 
         app.post('/destination', async (req, res) => {
@@ -92,7 +98,9 @@ async function run() {
         })
 
         app.get('/destination', async (req, res) => {
-            const result = await destinationscollection.find().toArray()
+            const email = req.query.email;
+            const query = { email: email }
+            const result = await destinationscollection.find(query).toArray()
             res.send(result)
         })
 
