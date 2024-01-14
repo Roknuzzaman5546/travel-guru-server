@@ -31,11 +31,30 @@ async function run() {
         const userscollection = client.db('traveldb').collection('users')
         const hotelscollection = client.db('traveldb').collection('hotel')
         const destinationscollection = client.db('traveldb').collection('destination')
+        const hotelsbookcollection = client.db('traveldb').collection('hotelsbook')
+        const placesbookcollection = client.db('traveldb').collection('placesbook')
+
+        // Place related Api
 
         app.get('/place', async (req, res) => {
             const result = await placecollection.find().toArray();
             res.send(result)
         })
+
+        app.post('/placebook', async (req, res) => {
+            const placebook = req.body;
+            const result = await placesbookcollection.insertOne(placebook)
+            res.send(result)
+        })
+
+        app.get('/  ', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const result = await placesbookcollection.find(query).toArray()
+            res.send(result)
+        })
+
+        // Users Related Api
 
         app.post('/users', async (req, res) => {
             const userInfo = req.body;
@@ -43,10 +62,28 @@ async function run() {
             res.send(result);
         })
 
+        // Hotel related Api
+
         app.get('/hotel', async (req, res) => {
             const result = await hotelscollection.find().toArray();
             res.send(result);
         })
+
+        app.post('/hotelbook', async (req, res) => {
+            const hotelbook = req.body;
+            const result = await hotelsbookcollection.insertOne(hotelbook)
+            res.send(result)
+        })
+
+        app.get('/hotelbook', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const result = await hotelsbookcollection.find(query).toArray()
+            res.send(result)
+        })
+
+
+        // Destination related Api
 
         app.post('/destination', async (req, res) => {
             const Destination = req.body;
@@ -58,6 +95,7 @@ async function run() {
             const result = await destinationscollection.find().toArray()
             res.send(result)
         })
+
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
