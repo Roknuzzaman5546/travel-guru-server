@@ -14,7 +14,6 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 
-
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1,
@@ -38,6 +37,12 @@ async function run() {
 
         app.get('/place', async (req, res) => {
             const result = await placecollection.find().toArray();
+            res.send(result)
+        })
+
+        app.post('/place', async (req, res) => {
+            const place = req.body;
+            const result = await placecollection.insertOne(place)
             res.send(result)
         })
 
@@ -67,13 +72,17 @@ async function run() {
             res.send(result)
         })
 
-
-
         // Hotel related Api
 
         app.get('/hotel', async (req, res) => {
             const result = await hotelscollection.find().toArray();
             res.send(result);
+        })
+
+        app.post('/hotel', async (req, res) => {
+            const hotel = req.body;
+            const result = await hotelscollection.insertOne(hotel)
+            res.send(result)
         })
 
         app.post('/hotelbook', async (req, res) => {
