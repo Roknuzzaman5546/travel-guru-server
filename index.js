@@ -2,6 +2,7 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+const stripe = require("stripe")(process.env.STRIPE_SCREET_KEY)
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -29,9 +30,7 @@ async function run() {
         const placecollection = client.db('traveldb').collection('place')
         const userscollection = client.db('traveldb').collection('users')
         const hotelscollection = client.db('traveldb').collection('hotel')
-        const destinationscollection = client.db('traveldb').collection('destination')
-        const hotelsbookcollection = client.db('traveldb').collection('hotelsbook')
-        const placesbookcollection = client.db('traveldb').collection('placesbook')
+        const choicelistcollection = client.db('traveldb').collection('choicelist')
 
         // Place related Api
 
@@ -43,19 +42,6 @@ async function run() {
         app.post('/place', async (req, res) => {
             const place = req.body;
             const result = await placecollection.insertOne(place)
-            res.send(result)
-        })
-
-        app.post('/placebook', async (req, res) => {
-            const placebook = req.body;
-            const result = await placesbookcollection.insertOne(placebook)
-            res.send(result)
-        })
-
-        app.get('/placebook', async (req, res) => {
-            const email = req.query.email;
-            const query = { email: email }
-            const result = await placesbookcollection.find(query).toArray()
             res.send(result)
         })
 
@@ -84,25 +70,18 @@ async function run() {
             const result = await hotelscollection.insertOne(hotel)
             res.send(result)
         })
-
-        app.post('/hotelbook', async (req, res) => {
-            const hotelbook = req.body;
-            const result = await hotelsbookcollection.insertOne(hotelbook)
-            res.send(result)
-        })
-
-        app.get('/hotelbook', async (req, res) => {
-            const email = req.query.email;
-            const query = { email: email }
-            const result = await hotelsbookcollection.find(query).toArray()
-            res.send(result)
-        })
-
         // Destination related Api
 
-        app.post('/destination', async (req, res) => {
-            const Destination = req.body;
-            const result = await destinationscollection.insertOne(Destination)
+        app.post('/choicelist', async (req, res) => {
+            const placebook = req.body;
+            const result = await choicelistcollection.insertOne(placebook)
+            res.send(result)
+        })
+
+        app.get('/choicelist', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const result = await choicelistcollection.find(query).toArray()
             res.send(result)
         })
 
@@ -111,6 +90,22 @@ async function run() {
             const query = { email: email }
             const result = await destinationscollection.find(query).toArray()
             res.send(result)
+        })
+
+        // Payment section
+
+        app.post('/create-payment-intent', async (req, res) => {
+            const { cost } = req.body;
+            const ammount = parseInt(cost * 100)
+
+            const paymentIntent = await stripe.paymentIntents.creat({
+                ammount: ammount,
+                currency: "usd",
+                payment_method_types: ["card"],
+            })
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            })
         })
 
 
