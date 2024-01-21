@@ -2,7 +2,7 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const stripe = require("stripe")(process.env.STRIPE_SCREET_KEY)
+const stripe = require("stripe")(process.env.SCREET_KEY)
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -30,6 +30,7 @@ async function run() {
         const placecollection = client.db('traveldb').collection('place')
         const userscollection = client.db('traveldb').collection('users')
         const hotelscollection = client.db('traveldb').collection('hotel')
+        const reviewscollection = client.db('traveldb').collection('reviews')
         const choicelistcollection = client.db('traveldb').collection('choicelist')
 
         // Place related Api
@@ -92,16 +93,25 @@ async function run() {
             res.send(result)
         })
 
+        // Review related api
+
+        app.post('/review', async (req, res) => {
+            const review = req.body;
+            const result = await reviewscollection.insertOne(review)
+            res.send(result)
+        })
+
         // Payment section
 
         app.post('/create-payment-intent', async (req, res) => {
             const { cost } = req.body;
             const ammount = parseInt(cost * 100)
+            console.log(ammount, 'ammount inside client')
 
-            const paymentIntent = await stripe.paymentIntents.creat({
+            const paymentIntent = await stripe.paymentIntents.create({
                 ammount: ammount,
                 currency: "usd",
-                payment_method_types: ["card"],
+                payment_method_types: ['card'],
             })
             res.send({
                 clientSecret: paymentIntent.client_secret,
