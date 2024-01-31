@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -32,6 +32,7 @@ async function run() {
         const hotelscollection = client.db('traveldb').collection('hotel')
         const reviewscollection = client.db('traveldb').collection('reviews')
         const choicelistcollection = client.db('traveldb').collection('choicelist')
+        const paymentcollection = client.db('traveldb').collection('payment')
 
         // Place related Api
 
@@ -101,20 +102,71 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/review', async (req, res) => {
+            const result = await reviewscollection.find().toArray()
+            res.send(result)
+        })
+
         // Payment section
 
         app.post('/create-payment-intent', async (req, res) => {
             const { cost } = req.body;
             const ammount = parseInt(cost * 100)
-            console.log(ammount, 'ammount inside client')
 
             const paymentIntent = await stripe.paymentIntents.create({
-                ammount: ammount,
+                amount: ammount,
                 currency: "usd",
                 payment_method_types: ['card'],
             })
             res.send({
                 clientSecret: paymentIntent.client_secret,
+            })
+        })
+
+        app.post("/payment", async (req, res) => {
+            const payment = req.body;
+            const paymentResult = await paymentcollection.insertOne(payment)
+            const query = {
+                _id: {
+                    $in: payment.choicelistIds.map(id => new ObjectId(id))
+                }
+            }
+            const deleteResult = await choicelistcollection.deleteMany(query)
+            res.send({ paymentResult, deleteResult })
+        })
+
+        app.get("/payment", async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const result = await paymentcollection.find(query).toArray()
+            res.send(result)
+        })
+
+        app.get("/admin-stats", async (req, res) => {
+            const users = await userscollection.estimatedDocumentCount();
+            const hotel = await hotelscollection.estimatedDocumentCount();
+            const place = await placecollection.estimatedDocumentCount();
+            const item = hotel + place;
+            const orders = await paymentcollection.estimatedDocumentCount();
+
+            const result = await paymentcollection.aggregate([
+                {
+                    $group: {
+                        _id: null,
+                        totalRevenue: {
+                            $sum: "$price"
+                        }
+                    }
+                }
+            ]).toArray();
+
+            const revenue = result.length > 0 ? result[0].totalRevenue : 0;
+
+            res.send({
+                users,
+                item,
+                orders,
+                revenue
             })
         })
 
