@@ -26,14 +26,13 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
         const placecollection = client.db('traveldb').collection('place')
         const userscollection = client.db('traveldb').collection('users')
         const hotelscollection = client.db('traveldb').collection('hotel')
         const reviewscollection = client.db('traveldb').collection('reviews')
         const choicelistcollection = client.db('traveldb').collection('choicelist')
         const paymentcollection = client.db('traveldb').collection('payment')
-
         // Place related Api
 
         app.get('/place', async (req, res) => {
@@ -57,6 +56,13 @@ async function run() {
 
         app.get('/users', async (req, res) => {
             const result = await userscollection.find().toArray()
+            res.send(result)
+        })
+
+        app.delete('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await userscollection.deleteOne(query)
             res.send(result)
         })
 
@@ -85,6 +91,13 @@ async function run() {
             const query = { email: email }
             const result = await choicelistcollection.find(query).toArray()
             res.send(result)
+        })
+
+        app.delete('/choice/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const result = await choicelistcollection.deleteOne(filter);
+            res.send(result);
         })
 
         app.get('/destination', async (req, res) => {
@@ -142,6 +155,12 @@ async function run() {
             res.send(result)
         })
 
+        app.get("/allPayments", async (req, res) => {
+            const result = await paymentcollection.find().toArray()
+            console.log(result);
+            res.send(result)
+        })
+
         app.get("/admin-stats", async (req, res) => {
             const users = await userscollection.estimatedDocumentCount();
             const hotel = await hotelscollection.estimatedDocumentCount();
@@ -171,9 +190,9 @@ async function run() {
         })
 
 
-        // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+        // Send a ping to confirm a successful connectionf
+        // await client.db("admin").command({ ping: 1 });
+        // console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();
