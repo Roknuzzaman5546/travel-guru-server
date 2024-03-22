@@ -46,16 +46,34 @@ async function run() {
             res.send(result)
         })
 
+        app.delete('/place/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await placecollection.deleteOne(query)
+            res.send(result)
+        })
+
         // Users Related Api
 
         app.post('/users', async (req, res) => {
             const userInfo = req.body;
+            const query = { email: userInfo.email }
+            const existingUser = await userscollection.findOne(query)
+            if (existingUser) {
+                return res.send({ message: "existing already added", insertedId: null })
+            }
             const result = await userscollection.insertOne(userInfo)
-            res.send(result);
+            res.send(result)
         })
 
         app.get('/users', async (req, res) => {
             const result = await userscollection.find().toArray()
+            res.send(result)
+        })
+
+        app.get('/users/:email', async (req, res) => {
+            const email = req.params.email;
+            const result = await userscollection.findOne({ email })
             res.send(result)
         })
 
@@ -65,6 +83,19 @@ async function run() {
             const result = await userscollection.deleteOne(query)
             res.send(result)
         })
+
+        //change user role to owner
+        app.patch("/users/:id", async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const roleChange = {
+                $set: {
+                    role: "admin",
+                },
+            };
+            const result = await userscollection.updateOne(filter, roleChange);
+            res.send(result);
+        });
 
         // Hotel related Api
 
@@ -78,6 +109,14 @@ async function run() {
             const result = await hotelscollection.insertOne(hotel)
             res.send(result)
         })
+
+        app.delete('/hotel/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await hotelscollection.deleteOne(query)
+            res.send(result)
+        })
+
         // Destination related Api
 
         app.post('/choicelist', async (req, res) => {
