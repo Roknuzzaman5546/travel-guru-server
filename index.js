@@ -32,6 +32,7 @@ async function run() {
         const hotelscollection = client.db('traveldb').collection('hotel')
         const reviewscollection = client.db('traveldb').collection('reviews')
         const choicelistcollection = client.db('traveldb').collection('choicelist')
+        const reviewCollection = client.db("RentifyDB").collection("reviews");
         const paymentcollection = client.db('traveldb').collection('payment')
         // Place related Api
 
@@ -163,27 +164,24 @@ async function run() {
 
         app.post('/create-payment-intent', async (req, res) => {
             const { cost } = req.body;
-            const ammount = parseInt(cost * 100)
+            const amount = parseInt(cost * 100);
 
             const paymentIntent = await stripe.paymentIntents.create({
-                amount: ammount,
+                amount: amount,
                 currency: "usd",
-                payment_method_types: ['card'],
-            })
+                payment_method_types: ["card"],
+            });
             res.send({
                 clientSecret: paymentIntent.client_secret,
-            })
+            });
         })
 
         app.post("/payment", async (req, res) => {
             const payment = req.body;
             const paymentResult = await paymentcollection.insertOne(payment)
-            const query = {
-                _id: {
-                    $in: payment.choicelistIds.map(id => new ObjectId(id))
-                }
-            }
-            const deleteResult = await choicelistcollection.deleteMany(query)
+            const query = { _id: new ObjectId(payment.choicelistId) };
+            console.log(query);
+            const deleteResult = await choicelistcollection.deleteOne(query)
             res.send({ paymentResult, deleteResult })
         })
 
@@ -196,7 +194,7 @@ async function run() {
 
         app.get("/allPayments", async (req, res) => {
             const result = await paymentcollection.find().toArray()
-            console.log(result);
+            // console.log(result);
             res.send(result)
         })
 
@@ -227,6 +225,21 @@ async function run() {
                 revenue
             })
         })
+
+        //reviews
+
+        //posting
+        app.post("/reviews", async (req, res) => {
+            const review = req.body;
+            const result = await reviewCollection.insertOne(review);
+            res.send(result);
+        });
+
+        //getting
+        app.get("/reviews", async (req, res) => {
+            const result = await reviewCollection.find().toArray();
+            res.send(result);
+        });
 
 
         // Send a ping to confirm a successful connectionf
