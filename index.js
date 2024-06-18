@@ -34,6 +34,8 @@ async function run() {
         const choicelistcollection = client.db('traveldb').collection('choicelist')
         const reviewCollection = client.db("RentifyDB").collection("reviews");
         const paymentcollection = client.db('traveldb').collection('payment')
+        const blogsCollection = client.db('traveldb').collection('blogs')
+        const commentCollection = client.db('traveldb').collection('blogsComment');
         // Place related Api
 
         app.get('/place', async (req, res) => {
@@ -238,6 +240,32 @@ async function run() {
         //getting
         app.get("/reviews", async (req, res) => {
             const result = await reviewCollection.find().toArray();
+            res.send(result);
+        });
+
+        // Comment code  section
+
+        app.get("/comments", async (req, res) => {
+            const result = await commentCollection.find().toArray();
+            res.send(result);
+        })
+
+        app.post("/comments", async (req, res) => {
+            const comment = req.body;
+            const result = await commentCollection.insertOne(comment);
+            res.send(result);
+        });
+
+
+        // blogs section
+        app.get("/blogs", async (req, res) => {
+            const result = await blogsCollection.find().toArray();
+            res.send(result);
+        })
+
+        app.post("/blogs", async (req, res) => {
+            const blog = req.body;
+            const result = await blogsCollection.insertOne(blog);
             res.send(result);
         });
 
