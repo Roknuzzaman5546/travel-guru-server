@@ -7,7 +7,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // midllware
-app.use(cors());
+app.use(cors());      
 app.use(express.json())
 
 
@@ -31,6 +31,7 @@ async function run() {
         const userscollection = client.db('traveldb').collection('users')
         const hotelscollection = client.db('traveldb').collection('hotel')
         const reviewscollection = client.db('traveldb').collection('reviews')
+        const busCollection = client.db('traveldb').collection('buses')
         const choicelistcollection = client.db('traveldb').collection('choicelist')
         const reviewCollection = client.db("RentifyDB").collection("reviews");
         const paymentcollection = client.db('traveldb').collection('payment')
